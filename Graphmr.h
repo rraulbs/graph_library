@@ -98,6 +98,8 @@ public:
 	void runGraph(string path, char structure, char search, int v_init, bool info, bool print);
 	void runGraph();
 
+	void loadPercent(int p, int n);
+
 };
 
 #endif /* GRAPHMR_H_ */

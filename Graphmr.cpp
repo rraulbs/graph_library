@@ -11,6 +11,7 @@ Graphmr::Graphmr() {//(char const* path) : file(path)
 	this-> d_min = INT_MAX;
 	this-> d_max = INT_MIN;
 	this-> d_mean = 0;
+	this-> print = true;
 }
 
 Graphmr::~Graphmr() {
@@ -109,10 +110,11 @@ void Graphmr::buildGraph(char structure){
 	ordDegree.resize(n_vertices);
 	set_Degree();
 	set_Explored();
+	set_Level();
+	set_Parent();
 	this->structure = structure;
-
+	int n = 1;
 	switch(structure){
-
 		case 'm':
 			//Adjacency Matrix
 			cout << "Structure: Adjacency Matrix" <<endl;
@@ -125,6 +127,12 @@ void Graphmr::buildGraph(char structure){
 			}
 
 	        while(file>>vx>>vy){
+				if (int(vx) > n_vertices){continue;}
+				if (int(vy) > n_vertices){continue;}
+				if (int(vx) <= 0){continue;}
+				if (int(vy) <= 0){continue;}
+				loadPercent(n, n_vertices);
+				n++;
 	        	n_edges++; //counts the number of edges
 	            //-1 because graph file starts at [1] and array starts at [0]
 	            adMatrix[vx-1][vy-1] = true; //if vx is connected to vy;
@@ -144,6 +152,12 @@ void Graphmr::buildGraph(char structure){
 			}
 			listElement* tempElement;
 			while (file >> vx >> vy){
+				if (int(vx) > n_vertices){continue;}
+				if (int(vy) > n_vertices){continue;}
+				if (int(vx) <= 0){continue;}
+				if (int(vy) <= 0){continue;}
+				loadPercent(n, n_vertices);
+				n++;
 	        	n_edges++; //counts the number of edges
 				tempElement = new listElement(); //creates an auxiliary element
 				tempElement-> vertex = vy; //assigns vy value to the element vertex
@@ -168,6 +182,12 @@ void Graphmr::buildGraph(char structure){
 		        vec[i] = vector<int>();
 			}
 			while (file >> vx >> vy){
+				if (int(vx) > n_vertices){continue;}
+				if (int(vy) > n_vertices){continue;}
+				if (int(vx) <= 0){continue;}
+				if (int(vy) <= 0){continue;}
+				loadPercent(n, n_vertices);
+				n++;
 				n_edges++;
 				vec[vx-1].push_back(vy);
 				vec[vy-1].push_back(vx);
@@ -204,8 +224,6 @@ void Graphmr::InfoDegree(){
 	setD_median();
 }
 void Graphmr::BFS(int s){
-	set_Level();
-	set_Parent();
 	queue<int> Q; //creates a queue Q that temporarily stores the neighbours
 
 	switch(structure){
@@ -274,14 +292,13 @@ void Graphmr::BFS(int s){
 	if (print){ //set print=true in order to print the spanning tree
 		ofstream output("BFS-Tree.txt");
 		output <<"Vertex\tParent\tLevel"<<endl;
-		for(int i = 0 ; i < n_vertices ; i++)
-            	output<<i+1<<"\t"<<Parent[i]<<"\t"<<Level[i]<<endl;
-				output.close();
+		for(int i = 0 ; i < n_vertices ; i++){
+        	output<<i+1<<"\t"<<Parent[i]<<"\t"<<Level[i]<<endl;
+		}
+		output.close();
 	}
 }
 void Graphmr::DFS(int s){
-	set_Level();
-	set_Parent();
 	stack<int> S; //creates a stack S that temporarily stores the neighbours
 
 	switch(structure){
@@ -352,9 +369,10 @@ void Graphmr::DFS(int s){
 	if (print){
 		ofstream output("DFS-Tree.txt");
 		output <<"Vertex\tParent\tLevel"<<endl;
-		for(int i=0; i<n_vertices;i++)
-            	output<<i+1<<"\t"<<Parent[i]<<"\t"<<Level[i]<<endl;
-		output.close();
+		for(int i=0; i<n_vertices;i++){
+            output<<i+1<<"\t"<<Parent[i]<<"\t"<<Level[i]<<endl;
+		}
+        output.close();
 	}
 }
 void Graphmr::CC(){
@@ -416,17 +434,18 @@ void Graphmr::runGraph(string path, char structure, char search, int v_init, boo
 	if (info == true){
 		InfoDegree();
 		cout<<"****************************************"<<endl;
-		cout<<"Vertices: " 			<<getN_vertices()	<<endl;
-		cout<<"Edges: "				<<getN_edges()		<<endl;
-		cout<<"Degree(mean): " 		<<getD_mean()		<<endl;
-		cout<<"Degree(min): " 		<<getD_min()		<<endl;
-		cout<<"Degree(max): " 		<<getD_max()		<<endl;
-		cout<<"Degree(median): " 	<<getD_median()		<<endl;
+		cout<<"Vertices:" 		<<"\t"<<getN_vertices()	<<endl;
+		cout<<"Edges:"			<<"\t\t"<<getN_edges()	<<endl;
+		cout<<"Degree(mean):" 	<<"\t"<<getD_mean()		<<endl;
+		cout<<"Degree(min):" 	<<"\t"<<getD_min()		<<endl;
+		cout<<"Degree(max):" 	<<"\t"<<getD_max()		<<endl;
+		cout<<"Degree(median):" <<"\t"<<getD_median()	<<endl;
 		cout<<"****************************************"<<endl;
 	}
 	time (&begin); // note time before execution
 	switch(search){
 		case 'b':
+			cout<< "BFS started" <<endl;
 			BFS(v_init);
 			cout<< "BFS successfully generated" <<endl;
 			break;
@@ -443,3 +462,13 @@ void Graphmr::runGraph(string path, char structure, char search, int v_init, boo
 }
 
 //Other Functions*************************************
+
+void  Graphmr::loadPercent(int p, int n){
+	if (p == 1){cout << "***Loading***"<<endl;}
+	if (p == n) {cout << "**********100%"<<endl;}
+	else if (p == 8*n/10) {cout << "********  80%"<<endl;}
+	else if (p == 6*n/10) {cout << "******    60%"<<endl;}
+	else if (p == 4*n/10) {cout << "****      40%"<<endl;}
+	else if (p == 2*n/10) {cout << "**        20%"<<endl;}
+}
+
