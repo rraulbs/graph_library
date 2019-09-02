@@ -10,8 +10,10 @@ Graphmr::Graphmr() {//(char const* path) : file(path)
 	// TODO Auto-generated constructor stub
 	this-> d_min = INT_MAX;
 	this-> d_max = INT_MIN;
+	this-> diameter = -1;
+	this-> level_Max = INT_MIN;
 	this-> d_mean = 0;
-	this-> print = true;
+	this-> print = false;
 }
 
 Graphmr::~Graphmr() {
@@ -38,6 +40,33 @@ float Graphmr::getD_median(){
 	return d_median;
 }
 
+int Graphmr::get_Parent(int v){
+	return Parent[v-1];
+}
+int Graphmr::get_Level(int v){
+	return Level[v-1];
+}
+int Graphmr::get_minsizecc(){
+	int min_size = INT_MAX;
+	for(int i = 0; i <components ; i++){
+		min_size = min(size[i], min_size);
+	}
+	return min_size;
+}
+int Graphmr::get_maxsizecc(){
+	int max_size = INT_MIN;
+	for(int i = 0; i< components; i++){
+		max_size = max(size[i], max_size);
+	}
+	return max_size;
+}
+int Graphmr::get_level_Max(){
+	return level_Max;
+}
+int Graphmr::get_Diameter(){
+	return diameter;
+}
+
 //SETTERS - mutator methods
 void Graphmr::setD_min(int value){
 	d_min = min(d_min, value);
@@ -59,30 +88,49 @@ void Graphmr::setD_median(){
 		d_median = ordDegree[mdn-1];
 	}
 }
-
+void Graphmr::set_DELP(){
+	for (int i=0; i<n_vertices; i++){
+		//Degree[i] = 0;
+		Explored[i] = false;
+		Level[i] = 0;
+		Parent[i] = 0;
+	}
+}
 void Graphmr::set_Degree(){
-	Degree = new int[n_vertices];
 	for (int i=0; i<n_vertices; i++){
 		Degree[i] = 0;
 	}
 }
 void Graphmr::set_Explored(){
-	Explored = new bool[n_vertices]; // Explored vertices set to zero;
 	for (int i = 0; i < n_vertices; i++){
 		Explored[i] = false;
 	}
 }
 void Graphmr::set_Level(){
-	Level = new int[n_vertices];
 	for (int i=0; i<n_vertices ;i++){
 		Level[i] = 0;
 	}
 }
 void Graphmr::set_Parent(){
-	Parent = new int[n_vertices];
 	for (int i=0; i<n_vertices ;i++){
 		Parent[i] = 0;
 	}
+}
+void Graphmr::set_Diameter(){
+	clock_t start, end;
+	double time_taken;
+	double total = 0;
+    for (int i = 1; i < getN_vertices() + 1; i++){
+    	loadPercent(i, getN_vertices());
+    	set_DELP();
+        start = clock();
+    	BFS(i);
+    	diameter = max(diameter, get_level_Max());
+        end = clock();
+        total = double(end - start) / double(CLOCKS_PER_SEC);
+        time_taken = time_taken + total;
+    }
+    cout << "Time taken by program inside: " << time_taken <<endl;
 }
 
 //Functions*******************************************
@@ -108,10 +156,11 @@ void Graphmr::buildGraph(char structure){
 	int vx, vy; // declaration of vertices that constitutes an edge
 	n_edges = 0;
 	ordDegree.resize(n_vertices);
-	set_Degree();
-	set_Explored();
-	set_Level();
-	set_Parent();
+	Degree = new int[n_vertices];
+	Explored = new bool[n_vertices];
+	Level = new int[n_vertices];
+	Parent = new int[n_vertices];
+	set_DELP();
 	this->structure = structure;
 	int n = 1;
 	switch(structure){
@@ -152,10 +201,18 @@ void Graphmr::buildGraph(char structure){
 			}
 			listElement* tempElement;
 			while (file >> vx >> vy){
-				if (int(vx) > n_vertices){continue;}
-				if (int(vy) > n_vertices){continue;}
-				if (int(vx) <= 0){continue;}
-				if (int(vy) <= 0){continue;}
+				if (int(vx) > n_vertices){
+					continue;
+				}
+				if (int(vy) > n_vertices){
+					continue;
+				}
+				if (int(vx) <= 0){
+					continue;
+				}
+				if (int(vy) <= 0){
+					continue;
+				}
 				loadPercent(n, n_vertices);
 				n++;
 	        	n_edges++; //counts the number of edges
@@ -225,7 +282,6 @@ void Graphmr::InfoDegree(){
 }
 void Graphmr::BFS(int s){
 	queue<int> Q; //creates a queue Q that temporarily stores the neighbours
-
 	switch(structure){
 		case 'm':
 			Q.push(s); //adds the initial vertex to the queue
@@ -238,9 +294,10 @@ void Graphmr::BFS(int s){
 					if (adMatrix[vN-1][i] == true && Explored[i] == false){
 						Q.push(i+1);
 						Explored[i] = true;
-						if (print){
+						if(print){
 							Parent[i] = vN;
 							Level[i] = Level[vN-1] + 1;
+							level_Max = max(level_Max, Level[i]);
 						}
 					}
 				}
@@ -257,10 +314,9 @@ void Graphmr::BFS(int s){
 					if (Explored[(i->vertex)-1] == false) {
 						Q.push(i->vertex);
 						Explored[i->vertex-1] = true;
-	                    if (print){
-							Parent[i->vertex-1] = vN;
-	                    	Level[i->vertex-1] = Level[vN-1] + 1;
-						}
+						Parent[i->vertex-1] = vN;
+                    	Level[i->vertex-1] = Level[vN-1] + 1;
+						level_Max = max(level_Max, Level[i->vertex-1]);
 					}
 				}
 			}
@@ -276,10 +332,9 @@ void Graphmr::BFS(int s){
 					if(Explored[vec[vN-1][j] - 1] == false){
 						Q.push(vec[vN-1][j]);
 						Explored[vec[vN-1][j] -1] = true;
-						if (print){
-							Parent[vec[vN-1][j] -1] = vN;
-							Level[vec[vN-1][j] -1] = Level[vN-1] + 1;
-						}
+						Parent[vec[vN-1][j] -1] = vN;
+						Level[vec[vN-1][j] -1] = Level[vN-1] + 1;
+						level_Max = max(level_Max, Level[vec[vN-1][j] -1]);
 					}
 				}
 			}
@@ -312,7 +367,7 @@ void Graphmr::DFS(int s){
 					for (int i = 0; i < n_vertices; i++){
 						if (adMatrix[vN-1][i] == true && Explored[i]==false){
 							S.push(i+1);
-							if (print){
+							if(print){
 								Parent[i] = vN;
 								Level[i] = Level[vN-1]+1;
 							}
@@ -333,10 +388,8 @@ void Graphmr::DFS(int s){
 					for (listElement* i = adList[vN-1]; i != NULL; i = i->link){
 						if (Explored[(i->vertex)-1]==false){
 							S.push(i->vertex);
-							if(print){
-								Parent[(i->vertex)-1] = vN;
-								Level[(i->vertex)-1] = Level[vN-1] + 1;
-							}
+							Parent[(i->vertex)-1] = vN;
+							Level[(i->vertex)-1] = Level[vN-1] + 1;
 						}
 					}
 				}
@@ -353,10 +406,8 @@ void Graphmr::DFS(int s){
 					if(Explored[vec[vN-1][j] - 1] == false){
 						S.push(vec[vN-1][j]);
 						Explored[vec[vN-1][j] -1] = true;
-						if (print){
-							Parent[vec[vN-1][j] -1] = vN;
-							Level[vec[vN-1][j] -1] = Level[vN-1] + 1;
-						}
+						Parent[vec[vN-1][j] -1] = vN;
+						Level[vec[vN-1][j] -1] = Level[vN-1] + 1;
 					}
 				}
 			}
@@ -462,7 +513,6 @@ void Graphmr::runGraph(string path, char structure, char search, int v_init, boo
 }
 
 //Other Functions*************************************
-
 void  Graphmr::loadPercent(int p, int n){
 	if (p == 1){cout << "***Loading***"<<endl;}
 	if (p == n) {cout << "**********100%"<<endl;}

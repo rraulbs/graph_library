@@ -39,7 +39,9 @@ private:
 	int n_vertices;				//Number of vertices.
 	int d_min;					//degree min
 	int d_max;					//degree max
-	int components;				//Number of components
+	int level_Max;
+	int components;				//number of components
+	int diameter;				//graph diameter
 	int* size; 					//component size
 	int* Degree; 				//stores each vertex degree
 	int* Parent;				//stores each vertex - parent
@@ -71,6 +73,12 @@ public:
 	int getN_vertices();
 	int getD_min();
 	int getD_max();
+	int get_Parent(int v);
+	int get_Level(int v);
+	int get_level_Max();
+	int get_minsizecc();
+	int get_maxsizecc();
+	int get_Diameter();
 	float getD_mean();
 	float getD_median();
 
@@ -82,10 +90,12 @@ public:
 	void setD_mean(float value);
 	void setD_median();
 
+	void set_DELP();
 	void set_Degree();
 	void set_Explored();
 	void set_Level();
 	void set_Parent();
+	void set_Diameter();
 
 	void openFile(string path);
 	void buildGraph(char structure);
