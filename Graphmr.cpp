@@ -90,10 +90,10 @@ void Graphmr::setD_median(){
 }
 void Graphmr::set_DELP(){
 	for (int i=0; i<n_vertices; i++){
-		//Degree[i] = 0;
+		Degree[i] = 0;
 		Explored[i] = false;
 		Level[i] = 0;
-		Parent[i] = 0;
+		Parent[i] = -1;
 	}
 }
 void Graphmr::set_Degree(){
@@ -113,7 +113,7 @@ void Graphmr::set_Level(){
 }
 void Graphmr::set_Parent(){
 	for (int i=0; i<n_vertices ;i++){
-		Parent[i] = 0;
+		Parent[i] = -1;
 	}
 }
 void Graphmr::set_Diameter(){
@@ -164,8 +164,7 @@ void Graphmr::buildGraph(char structure){
 	this->structure = structure;
 	int n = 1;
 	switch(structure){
-		case 'm':
-			//Adjacency Matrix
+		case 'm'://Adjacency Matrix
 			cout << "Structure: Adjacency Matrix" <<endl;
 			adMatrix = new bool*[n_vertices];
 			for (int i=0; i<n_vertices; i++){
@@ -174,7 +173,6 @@ void Graphmr::buildGraph(char structure){
 					adMatrix[i][j]=false;
 				}
 			}
-
 	        while(file>>vx>>vy){
 				if (int(vx) > n_vertices){continue;}
 				if (int(vy) > n_vertices){continue;}
@@ -182,18 +180,16 @@ void Graphmr::buildGraph(char structure){
 				if (int(vy) <= 0){continue;}
 				loadPercent(n, n_vertices);
 				n++;
-	        	n_edges++; //counts the number of edges
-	            //-1 because graph file starts at [1] and array starts at [0]
-	            adMatrix[vx-1][vy-1] = true; //if vx is connected to vy;
-	            adMatrix[vy-1][vx-1] = true; //then vy is connected to vx;
-	            Degree[vx-1]++, Degree[vy-1]++; //increments vx and vy degree's.
-	            ordDegree[vx-1]++, ordDegree[vy-1]++;
+	        	n_edges++; 								//counts the number of edges
+	            adMatrix[vx-1][vy-1] = true; 			//if vx is connected to vy;
+	            adMatrix[vy-1][vx-1] = true; 			//then vy is connected to vx;
+	            Degree[vx-1]++, Degree[vy-1]++; 		//increments vx and vy degree's.
+	            ordDegree[vx-1]++, ordDegree[vy-1]++;	//-1 because graph file starts at [1] and array starts at [0]
 	        }
 			cout << "Graph loaded successfully" << endl;
 			break;
 
-		case 'l':
-			//Adjacency List
+		case 'l'://Adjacency List
 			cout << "Structure: Adjacency List" <<endl;
 			adList = new listElement*[n_vertices];
 			for (int i = 0; i < n_vertices; i++){
@@ -201,29 +197,21 @@ void Graphmr::buildGraph(char structure){
 			}
 			listElement* tempElement;
 			while (file >> vx >> vy){
-				if (int(vx) > n_vertices){
-					continue;
-				}
-				if (int(vy) > n_vertices){
-					continue;
-				}
-				if (int(vx) <= 0){
-					continue;
-				}
-				if (int(vy) <= 0){
-					continue;
-				}
+				if (int(vx) > n_vertices){continue;}
+				if (int(vy) > n_vertices){continue;}
+				if (int(vx) <= 0){continue;}
+				if (int(vy) <= 0){continue;}
 				loadPercent(n, n_vertices);
 				n++;
-	        	n_edges++; //counts the number of edges
-				tempElement = new listElement(); //creates an auxiliary element
-				tempElement-> vertex = vy; //assigns vy value to the element vertex
-				tempElement-> link = adList[vx-1]; //pointer to the complementing vertex
-				adList[vx-1]	 = tempElement; //inserts in the front
+	        	n_edges++; 							//counts the number of edges
+				tempElement = new listElement(); 	//creates an auxiliary element
+				tempElement-> vertex = vy; 			//assigns vy value to the element vertex
+				tempElement-> link = adList[vx-1]; 	//pointer to the complementing vertex
+				adList[vx-1]	 = tempElement; 	//inserts in the front
 				//if vx is connected to vy, vy is connected to vx
-				tempElement = new listElement(); //creates an auxiliary element
-				tempElement-> vertex = vx; //assigns vx value to the element vertex
-				tempElement-> link = adList[vy-1]; //pointer to the complementing vertex
+				tempElement = new listElement(); 	//creates an auxiliary element
+				tempElement-> vertex = vx; 			//assigns vx value to the element vertex
+				tempElement-> link = adList[vy-1]; 	//pointer to the complementing vertex
 				adList[vy-1] = tempElement;
 				Degree[vx-1]++, Degree[vy-1]++;
 	            ordDegree[vx-1]++, ordDegree[vy-1]++;
@@ -231,8 +219,7 @@ void Graphmr::buildGraph(char structure){
 			cout << "Graph loaded successfully" << endl;
 			break;
 
-		case 'v':
-			//Adjacency Vector
+		case 'v'://Adjacency Vector
 			cout << "Structure: Adjacency Vector" <<endl;
 			vec.resize(n_vertices);
 			for(int i = 0; i < n_vertices; i++){
@@ -281,10 +268,11 @@ void Graphmr::InfoDegree(){
 	setD_median();
 }
 void Graphmr::BFS(int s){
-	queue<int> Q; //creates a queue Q that temporarily stores the neighbours
+	queue<int> Q; 			//creates a queue Q that temporarily stores the neighbours
+	Parent[s-1] = 0;
 	switch(structure){
 		case 'm':
-			Q.push(s); //adds the initial vertex to the queue
+			Q.push(s); 		//adds the initial vertex to the queue
 			Explored[s-1]=true;
 			while (!Q.empty()){
 				int vN = Q.front();
@@ -294,11 +282,9 @@ void Graphmr::BFS(int s){
 					if (adMatrix[vN-1][i] == true && Explored[i] == false){
 						Q.push(i+1);
 						Explored[i] = true;
-						if(print){
-							Parent[i] = vN;
-							Level[i] = Level[vN-1] + 1;
-							level_Max = max(level_Max, Level[i]);
-						}
+						Parent[i] = vN;
+						Level[i] = Level[vN-1] + 1;
+						level_Max = max(level_Max, Level[i]);
 					}
 				}
 			}
@@ -354,11 +340,11 @@ void Graphmr::BFS(int s){
 	}
 }
 void Graphmr::DFS(int s){
-	stack<int> S; //creates a stack S that temporarily stores the neighbours
-
+	stack<int> S; 		//creates a stack S that temporarily stores the neighbours
+	Parent[s-1] = 0;
 	switch(structure){
 		case 'm':
-	        S.push(s); //adds the initial vertex to the queue
+	        S.push(s);	 //adds the initial vertex to the queue
 			while (!S.empty()){
 				int vN = S.top();
 				S.pop();
@@ -367,18 +353,15 @@ void Graphmr::DFS(int s){
 					for (int i = 0; i < n_vertices; i++){
 						if (adMatrix[vN-1][i] == true && Explored[i]==false){
 							S.push(i+1);
-							if(print){
 								Parent[i] = vN;
 								Level[i] = Level[vN-1]+1;
-							}
 						}
 					}
 				}
 			}
 			break;
 
-		case 'l':
-			//similar to BFS but using a stack instead of a queue
+		case 'l': //similar to BFS but using a stack instead of a queue
 	        S.push(s);
 			while (!S.empty()){
 				int vN = S.top();
@@ -436,7 +419,7 @@ void Graphmr::CC(){
 	components = 0;
 	cstack.push(1);
 	while (!cstack.empty()){
-		//cout << "entered " << endl;
+		//cout << "inserido" << endl;
 		index = cstack.top();
 		cstack.pop();
 		BFS(index);

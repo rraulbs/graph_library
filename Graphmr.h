@@ -1,8 +1,8 @@
 /*
  * Graphmr.h
- *
  *  Created on: 1 de fev de 2019
  *      Author: Raul
+ *      Collaborator: Luís
  */
 
 #ifndef GRAPHMR_H_
@@ -39,9 +39,9 @@ private:
 	int n_vertices;				//Number of vertices.
 	int d_min;					//degree min
 	int d_max;					//degree max
-	int level_Max;
 	int components;				//number of components
 	int diameter;				//graph diameter
+	int level_Max;				//used to find the diameter
 	int* size; 					//component size
 	int* Degree; 				//stores each vertex degree
 	int* Parent;				//stores each vertex - parent
@@ -106,10 +106,7 @@ public:
 	void CC();
 
 	void runGraph(string path, char structure, char search, int v_init, bool info, bool print);
-	void runGraph();
-
 	void loadPercent(int p, int n);
-
 };
 
 #endif /* GRAPHMR_H_ */
