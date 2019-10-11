@@ -323,8 +323,14 @@ void Graphmr::buildGraph(char structure, bool oriented, bool weight){
 		case 'v'://Adjacency Vector
 			cout << "Structure: Adjacency Vector" <<endl;
 			vec.resize(n_vertices);
+			if(weight == true){
+				vec_W.resize(n_vertices);
+			}
 			for(int i = 0; i < n_vertices; i++){
 		        vec[i] = vector<int>();
+		        if(weight == true){
+		        	vec_W[i] = vector<float>();
+		        }
 			}
 			//===========================================================================================
 			//Initialization - read file -> build vector
@@ -362,7 +368,31 @@ void Graphmr::buildGraph(char structure, bool oriented, bool weight){
 				cout << "Graph loaded successfully" << endl;
 			}
 			else{
-				//
+				while (file >> vx >> vy >> vz){
+					if (int(vx) > n_vertices){continue;}
+					if (int(vy) > n_vertices){continue;}
+					if (int(vx) <= 0){continue;}
+					if (int(vy) <= 0){continue;}
+					if (float(vz) < 0){
+						cout << "Weight < 0 : Does not meet necessary condition (Dijkstra's algorithm)" <<endl;
+						//continue;
+					}
+					loadPercent(n, n_vertices);
+					n++;
+					n_edges++;
+					vec[vx-1].push_back(vy);
+					vec_W[vx-1].push_back(vz);
+					if(oriented == false){
+						vec[vy-1].push_back(vx);
+						vec_W[vy-1].push_back(vz);
+						Degree[vx-1]++, Degree[vy-1]++;
+			            ordDegree[vx-1]++, ordDegree[vy-1]++;
+					}
+					else{
+						//nothing
+						continue;
+					}
+				}
 			}
 			//===========================================================================================
 			break;
@@ -373,6 +403,7 @@ void Graphmr::buildGraph(char structure, bool oriented, bool weight){
 	}
 	file.close();
 }
+
 void Graphmr::InfoDegree(){
 	for(int i = 0; i < n_vertices; i++){
 		d_mean+= Degree[i];
@@ -570,6 +601,10 @@ void Graphmr::CC(){
 	output.close();
 	cout << "Conected Components: " << components << endl;
 }
+void Graphmr::Dijkstra(int s){
+	//
+}
+
 void Graphmr::runGraph(string path, char structure, char search, int v_init, bool info, bool print){
 	this->print = print;
 	openFile(path);

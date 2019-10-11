@@ -20,17 +20,22 @@ int main()	 {
 		}
 		cout<<endl;
 	}
-	*/
+	//*/
+	Graphmr g;
+	g.openFile("T2_exemplo.txt");
+	g.buildGraph('v', true, true);
+	cout<< g.vec[0][0] << " # " << g.vec_W[0][0] <<endl;
+	cout<<g.vec[0].size();
 
+
+	/*
 	//vector<vector<vector<int> > > vec (5,vector<vector<int> >(3,vector <int>(2,4)));
 	//cout << vec[0][0][0] << endl;
 	//cout << vec[0][0][1] << endl;
-
 	vector<vector<vector<int> > > v (3,vector<vector<int> >(3,vector <int>()));
-
 	v[0][0].push_back(4);
 	v[0][0].push_back(2);
 	cout << v[0][0][0]<<endl;
 	cout << v[0][0][1]<<endl;
-
+	*/
 }

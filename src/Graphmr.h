@@ -51,6 +51,7 @@ private:
 	vector<int> inDegree;		//stores entry degree (directed graph)
 	vector<int> outDegree;		//stores output degree (directed graph)
 	vector<vector<int> > vec;	//adjacency vector
+	vector<vector<float> > vec_W;//adjacency vector (Store weights)
 
 	float d_mean;				//degree mean
 	float d_median;				//degree median
@@ -110,6 +111,7 @@ public:
 	void BFS(int s);
 	void DFS(int s);
 	void CC();
+	void Dijkstra(int s);
 
 	void runGraph(string path, char structure, char search, int v_init, bool info, bool print);
 	void loadPercent(int p, int n);
