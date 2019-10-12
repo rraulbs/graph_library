@@ -17,9 +17,13 @@
 #include <vector>			//std::vector
 #include <ctime>		 	//time_t
 #include <climits>			//INT_MAX
+#include <cfloat>			//FLT_MAX
+#include <functional>		//greater used in MEAN-HEAP (Dijkstra algorithm)
 
 using namespace std;
 using std::vector;
+
+typedef pair<float, int> par_distV;
 
 class listElement{
 	friend class Graphmr;	//grants access to Graphmr member variables
@@ -47,14 +51,18 @@ private:
 	int* Degree; 				//stores each vertex degree (non-directed graph)
 	int* Parent;				//stores each vertex - parent
 	int* Level;					//stores each vertex - level
+	int* visited;
 	vector<int> ordDegree;		//stores each vertex degree - median (non-directed graph)
 	vector<int> inDegree;		//stores entry degree (directed graph)
 	vector<int> outDegree;		//stores output degree (directed graph)
 	vector<vector<int> > vec;	//adjacency vector
 	vector<vector<float> > vec_W;//adjacency vector (Store weights)
 
+	float eccentricity;
 	float d_mean;				//degree mean
 	float d_median;				//degree median
+	float** adMatrix_dir;		//Adjacency matrix (directed graph)
+
 
 	bool print;					//output (ofstream)
 	bool oriented;				//True = directed graph; False = non-directed graph
@@ -68,9 +76,10 @@ private:
 	string path;
 	ifstream file;
 	time_t begin,end;			//time_t is a datatype to store time values.
+	par_distV* dist_v;
 
 public:
-	float** adMatrix_dir;		//Adjacency matrix (directed graph)
+	//float** adMatrix_dir;		//Adjacency matrix (directed graph)
 
 	Graphmr();					//char const* path);//Construtor default
 	~Graphmr();					//Destrutor da classe
@@ -88,6 +97,8 @@ public:
 	int get_Diameter();
 	float getD_mean();
 	float getD_median();
+	float get_dist_v(int v);
+	float get_eccentricity();
 
 	//SETTERS - mutator methods
 	void setN_edges();
@@ -103,9 +114,12 @@ public:
 	void set_Level();
 	void set_Parent();
 	void set_Diameter();
+	void set_dist_v();
+	void set_weight(bool w);
+	void set_eccentricity();
 
 	void openFile(string path);
-	void buildGraph(char structure, bool oriented, bool weight);
+	void buildGraph(char structure);
 	void InfoDegree();
 
 	void BFS(int s);

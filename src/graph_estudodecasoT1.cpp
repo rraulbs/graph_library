@@ -4,12 +4,20 @@
  *  Created on: 30 de set de 2019
  *      Author: Raul
  */
-	///*// runGraph(string path, char structure, char search, int v_init, bool info, bool print);
-	//Graphmr g;
-	//g.runGraph("dblp.txt", 'l', 'b', 1, true, true);
+
+//#include "Graphmr.h"
+//int main(){return 0;}
+	/*
+	//================================================================================================
+	// Função para testar algoritmo do Trabalho 1
+	runGraph(string path, char structure, char search, int v_init, bool info, bool print);
+	Graphmr g;
+	g.runGraph("dblp.txt", 'l', 'b', 1, true, true);
 	//g.CC();
 	//*/
+
 	/*
+    //========================ESTUDO DE CASO TRABALHO 1: =============================================
     //================================================================================================
 	//Estudo de Caso **** (Item 2 e Item 3): Executar 1000 BFS e DFS to get the average search time
 	double time_bfs = 0;
@@ -20,7 +28,7 @@
 	clock_t start, end;
 
 	Graphmr g;
-    g.openFile("live_journal.txt");	// read // as_graph // dblp // live_journal
+    g.openFile("as_graph.txt");	// read // as_graph // dblp // live_journal
     g.buildGraph('v');			// 'm' = matriz, 'l' = lista , 'v' = vetor
     // Running BFS and DFS one thousand times.
     cout << "Run BFS and DFS " << iterations << " times." <<endl;
@@ -121,6 +129,3 @@
     cout << "Time taken by program : " << time_taken <<endl;
     //================================================================================================
 	//*/
-
-
-

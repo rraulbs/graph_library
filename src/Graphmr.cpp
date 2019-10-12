@@ -14,6 +14,8 @@ Graphmr::Graphmr() {//(char const* path) : file(path)
 	this-> level_Max = INT_MIN;
 	this-> d_mean = 0;
 	this-> print = false;
+	this-> weight = false;
+	this-> oriented = false;
 }
 
 Graphmr::~Graphmr() {
@@ -66,6 +68,13 @@ int Graphmr::get_level_Max(){
 int Graphmr::get_Diameter(){
 	return diameter;
 }
+float Graphmr::get_dist_v(int v){
+	return dist_v[v-1].first;
+}
+float Graphmr::get_eccentricity(){
+	return eccentricity;
+}
+
 
 //SETTERS - mutator methods
 void Graphmr::setD_min(int value){
@@ -116,6 +125,12 @@ void Graphmr::set_Parent(){
 		Parent[i] = -1;
 	}
 }
+void Graphmr::set_dist_v(){
+	for(int i = 0; i<n_vertices; i++){
+		dist_v[i].first = FLT_MAX;
+		dist_v[i].second = i+1;
+	}
+}
 void Graphmr::set_Diameter(){
 	clock_t start, end;
 	double time_taken;
@@ -132,7 +147,15 @@ void Graphmr::set_Diameter(){
     }
     cout << "Time taken by program inside: " << time_taken <<endl;
 }
-
+void Graphmr::set_weight(bool w){
+	weight = w;
+}
+void Graphmr::set_eccentricity(){
+	eccentricity = FLT_MIN;
+	for(int i = 0; i < n_vertices; i++){
+		eccentricity = max(eccentricity, dist_v[i].first);
+	}
+}
 //Functions*******************************************
 void Graphmr::openFile(string path){
 	file.open(path.c_str()); // ("exemplo.txt, std::ifstream::in);
@@ -146,7 +169,7 @@ void Graphmr::openFile(string path){
 				" check if you put the correct location." <<endl;
 	}
 }
-void Graphmr::buildGraph(char structure, bool oriented, bool weight){
+void Graphmr::buildGraph(char structure){
 	if(error_1){
 		cout << "Open the file before building the graph!" <<endl;
 		return;
@@ -162,6 +185,10 @@ void Graphmr::buildGraph(char structure, bool oriented, bool weight){
 	Explored = new bool[n_vertices];
 	Level = new int[n_vertices];
 	Parent = new int[n_vertices];
+	if(weight == true){
+		dist_v = new par_distV[n_vertices];
+		set_dist_v();
+	}
 	set_DELP();
 	this->structure = structure;
 	int n = 1;
@@ -602,7 +629,44 @@ void Graphmr::CC(){
 	cout << "Conected Components: " << components << endl;
 }
 void Graphmr::Dijkstra(int s){
-	//
+	priority_queue<par_distV, vector<par_distV>, greater<par_distV> > pq;
+	dist_v[s-1].first = 0.0;
+	Parent[s-1] = 0;
+	switch(structure){
+			case 'm':
+				pq.push(dist_v[s-1]); 					//adds the initial vertex to the priority queue
+				Explored[s-1] = true;
+				while(!pq.empty()){ //!pq.empty()
+					pair<float, int> top = pq.top(); 	//Obs.: u = top //slide aula 07
+					Explored[top.second-1] = true;
+					pq.pop();
+					//Vertices goes up from 1 to n whereas the array index goes up from 0 to n-1
+					for (int i=0; i<n_vertices; i++){
+						if (adMatrix_dir[top.second-1][i] != -1 && Explored[i] == false){
+							if(dist_v[i].first == FLT_MAX){
+								pq.push(dist_v[i]);
+								Parent[i] = dist_v[top.second-1].second;
+								Level[i] = Level[dist_v[top.second-1].second-1]+1;
+							}
+							if(dist_v[i].first > dist_v[top.second-1].first + adMatrix_dir[top.second-1][i]){
+								dist_v[i].first = float(dist_v[top.second-1].first) + float(adMatrix_dir[top.second-1][i]);
+							}
+						}
+					}
+				}
+				break;
+			default:
+						cout<<"Undefined value, select: Matrix = 'm', List = 'l', Vector = 'v"<<endl;
+	}
+	if (true){ //set print=true in order to print the spanning tree
+		ofstream output("Dijkstra-Tree.txt");
+		output <<"Vertex\tParent\tLevel"<<endl;
+		for(int i = 0 ; i < n_vertices ; i++){
+        	output<<i+1<<"\t"<<Parent[i]<<"\t"<<Level[i]<<endl;
+		}
+		output.close();
+	}
+	//cout<< "Dijkstra successfully generated" <<endl;
 }
 
 void Graphmr::runGraph(string path, char structure, char search, int v_init, bool info, bool print){
@@ -611,7 +675,7 @@ void Graphmr::runGraph(string path, char structure, char search, int v_init, boo
 	if (error_1 == true){
 		return;
 	}
-	buildGraph(structure, false, false);
+	buildGraph(structure);
 	if (error_2 == true){
 		return;
 	}
