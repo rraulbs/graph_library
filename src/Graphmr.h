@@ -23,7 +23,9 @@
 using namespace std;
 using std::vector;
 
-typedef pair<float, int> par_distV;
+typedef pair<double, int> par_distV;
+typedef pair<double, int> par_cost;
+
 
 class listElement{
 	friend class Graphmr;	//grants access to Graphmr member variables
@@ -31,7 +33,7 @@ class listElement{
 	private:
 		listElement* link; 	//pointer to implement pseudo linked list
 		int vertex; 		// vertex id
-		float w;			// weight
+		double w;			// weight
 };
 
 class Graphmr {
@@ -58,7 +60,7 @@ private:
 	vector<vector<int> > vec;	//adjacency vector
 	vector<vector<float> > vec_W;//adjacency vector (Store weights)
 
-	float eccentricity;
+	double eccentricity;
 	float d_mean;				//degree mean
 	float d_median;				//degree median
 	float** adMatrix_dir;		//Adjacency matrix (directed graph)
@@ -77,6 +79,7 @@ private:
 	ifstream file;
 	time_t begin,end;			//time_t is a datatype to store time values.
 	par_distV* dist_v;
+	par_cost* cost;
 
 public:
 	//float** adMatrix_dir;		//Adjacency matrix (directed graph)
@@ -97,8 +100,10 @@ public:
 	int get_Diameter();
 	float getD_mean();
 	float getD_median();
-	float get_dist_v(int v);
-	float get_eccentricity();
+	double get_dist_v(int v);
+	double get_cost(int v);
+	double get_eccentricity();
+	double get_MST_cost();
 
 	//SETTERS - mutator methods
 	void setN_edges();
@@ -108,6 +113,7 @@ public:
 	void setD_mean(float value);
 	void setD_median();
 
+	void set_print(bool generate);
 	void set_DELP();
 	void set_Degree();
 	void set_Explored();
@@ -115,8 +121,9 @@ public:
 	void set_Parent();
 	void set_Diameter();
 	void set_dist_v();
+	void set_cost();
 	void set_weight(bool w);
-	void set_eccentricity();
+	void set_eccentricity(char algorithm);
 
 	void openFile(string path);
 	void buildGraph(char structure);
@@ -126,6 +133,7 @@ public:
 	void DFS(int s);
 	void CC();
 	void Dijkstra(int s);
+	void Prim(int s);
 
 	void runGraph(string path, char structure, char search, int v_init, bool info, bool print);
 	void loadPercent(int p, int n);

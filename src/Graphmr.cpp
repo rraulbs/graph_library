@@ -68,10 +68,20 @@ int Graphmr::get_level_Max(){
 int Graphmr::get_Diameter(){
 	return diameter;
 }
-float Graphmr::get_dist_v(int v){
+double Graphmr::get_dist_v(int v){
 	return dist_v[v-1].first;
 }
-float Graphmr::get_eccentricity(){
+double Graphmr::get_cost(int v){
+	return cost[v-1].first;
+}
+double Graphmr::get_MST_cost(){
+	double total = 0.0;
+	for(int i = 0; i<n_vertices; i++){
+		total = total + cost[i].first;
+	}
+	return total;
+}
+double Graphmr::get_eccentricity(){
 	return eccentricity;
 }
 
@@ -96,6 +106,9 @@ void Graphmr::setD_median(){
 	else{
 		d_median = ordDegree[mdn-1];
 	}
+}
+void Graphmr::set_print(bool generate){
+	print = generate;
 }
 void Graphmr::set_DELP(){
 	for (int i=0; i<n_vertices; i++){
@@ -127,8 +140,14 @@ void Graphmr::set_Parent(){
 }
 void Graphmr::set_dist_v(){
 	for(int i = 0; i<n_vertices; i++){
-		dist_v[i].first = FLT_MAX;
+		dist_v[i].first = DBL_MAX;
 		dist_v[i].second = i+1;
+	}
+}
+void Graphmr::set_cost(){
+	for(int i = 0; i<n_vertices; i++){
+		cost[i].first = DBL_MAX;
+		cost[i].second = i+1;
 	}
 }
 void Graphmr::set_Diameter(){
@@ -150,10 +169,21 @@ void Graphmr::set_Diameter(){
 void Graphmr::set_weight(bool w){
 	weight = w;
 }
-void Graphmr::set_eccentricity(){
-	eccentricity = FLT_MIN;
-	for(int i = 0; i < n_vertices; i++){
-		eccentricity = max(eccentricity, dist_v[i].first);
+void Graphmr::set_eccentricity(char algorithm){ //algorithm: d = Dijkstra, p = "prim";
+	eccentricity = DBL_MIN;
+	switch (algorithm){
+	case 'd':
+		for(int i = 0; i < n_vertices; i++){
+			eccentricity = max(eccentricity, dist_v[i].first);
+		}
+		break;
+	case 'p':
+		for(int i = 0; i < n_vertices; i++){
+			eccentricity = max(eccentricity, cost[i].first);
+		}
+		break;
+	default:
+		cout<<"Undefined value, select: Dijkstra = 'd', Prim = 'p'"<<endl;
 	}
 }
 //Functions*******************************************
@@ -188,6 +218,8 @@ void Graphmr::buildGraph(char structure){
 	if(weight == true){
 		dist_v = new par_distV[n_vertices];
 		set_dist_v();
+		cost = new par_cost[n_vertices];
+		set_cost();
 	}
 	set_DELP();
 	this->structure = structure;
@@ -637,28 +669,52 @@ void Graphmr::Dijkstra(int s){
 				pq.push(dist_v[s-1]); 					//adds the initial vertex to the priority queue
 				Explored[s-1] = true;
 				while(!pq.empty()){ //!pq.empty()
-					pair<float, int> top = pq.top(); 	//Obs.: u = top //slide aula 07
+					pair<double, int> top = pq.top(); 	//Obs.: u = top //slide aula 07
 					Explored[top.second-1] = true;
 					pq.pop();
 					//Vertices goes up from 1 to n whereas the array index goes up from 0 to n-1
 					for (int i=0; i<n_vertices; i++){
 						if (adMatrix_dir[top.second-1][i] != -1 && Explored[i] == false){
-							if(dist_v[i].first == FLT_MAX){
-								pq.push(dist_v[i]);
+							if(dist_v[i].first == DBL_MAX){
 								Parent[i] = dist_v[top.second-1].second;
 								Level[i] = Level[dist_v[top.second-1].second-1]+1;
 							}
 							if(dist_v[i].first > dist_v[top.second-1].first + adMatrix_dir[top.second-1][i]){
-								dist_v[i].first = float(dist_v[top.second-1].first) + float(adMatrix_dir[top.second-1][i]);
+								dist_v[i].first = double(dist_v[top.second-1].first) + double(adMatrix_dir[top.second-1][i]);
+								pq.push(dist_v[i]);
 							}
 						}
 					}
 				}
 				break;
+
+			case 'l':
+				pq.push(dist_v[s-1]); 					//adds the initial vertex to the priority queue
+				Explored[s-1] = true;
+				while(!pq.empty()){ //!pq.empty()
+					pair<double, int> top = pq.top(); 	//Obs.: u = top //slide aula 07
+					Explored[top.second-1] = true;
+					pq.pop();
+					//Vertices goes up from 1 to n whereas the array index goes up from 0 to n-1
+					for (listElement* i = adList[top.second -1]; i!=NULL; i = i->link){
+						if (Explored[(i->vertex)-1] == false){
+							if(dist_v[i->vertex - 1].first == DBL_MAX){
+								Parent[i->vertex - 1] = dist_v[top.second-1].second;
+								Level[i->vertex - 1] = Level[dist_v[top.second-1].second-1]+1;
+							}
+							if(dist_v[i->vertex -1].first > dist_v[top.second-1].first + i->w){ //adMatrix_dir[top.second-1][i]
+								dist_v[i->vertex - 1].first = dist_v[top.second-1].first + double(i->w);
+								pq.push(dist_v[i->vertex - 1]);
+							}
+						}
+					}
+				}
+				break;
+
 			default:
-						cout<<"Undefined value, select: Matrix = 'm', List = 'l', Vector = 'v"<<endl;
+				cout<<"Undefined value, select: Matrix = 'm', List = 'l', Vector = 'v"<<endl;
 	}
-	if (true){ //set print=true in order to print the spanning tree
+	if (print){ //set print=true in order to print the spanning tree
 		ofstream output("Dijkstra-Tree.txt");
 		output <<"Vertex\tParent\tLevel"<<endl;
 		for(int i = 0 ; i < n_vertices ; i++){
@@ -667,6 +723,74 @@ void Graphmr::Dijkstra(int s){
 		output.close();
 	}
 	//cout<< "Dijkstra successfully generated" <<endl;
+}
+
+void Graphmr::Prim(int s){
+	priority_queue<par_cost, vector<par_cost>, greater<par_cost> > pq;
+	cost[s-1].first = 0.0;
+	Parent[s-1] = 0;
+	switch(structure){
+		case 'm':
+			pq.push(cost[s-1]); 					//adds the initial vertex to the priority queue
+			Explored[s-1] = true;
+			while(!pq.empty()){ //!pq.empty()
+				pair<double, int> top = pq.top(); 	//Obs.: u = top //slide aula 07
+				Explored[top.second-1] = true;
+				pq.pop();
+				//Vertices goes up from 1 to n whereas the array index goes up from 0 to n-1
+				for (int i=0; i<n_vertices; i++){
+					if (adMatrix_dir[top.second-1][i] != -1 && Explored[i] == false){
+						if(cost[i].first == DBL_MAX){
+							Parent[i] = cost[top.second-1].second;
+							Level[i] = Level[cost[top.second-1].second-1]+1;
+						}
+						if(cost[i].first > adMatrix_dir[top.second-1][i]){
+							cost[i].first = double(adMatrix_dir[top.second-1][i]);
+							Parent[i] = cost[top.second-1].second;
+							pq.push(cost[i]); //Se for colocado dentro da fila antes da alteração o resultado será incorreto
+						}
+					}
+				}
+			}
+			break;
+
+		case 'l':
+			pq.push(cost[s-1]); 					//adds the initial vertex to the priority queue
+			Explored[s-1] = true;
+			while(!pq.empty()){ //!pq.empty()
+				pair<double, int> top = pq.top(); 	//Obs.: u = top //slide aula 07
+				Explored[top.second-1] = true;
+				pq.pop();
+				//Vertices goes up from 1 to n whereas the array index goes up from 0 to n-1
+				for (listElement* i = adList[top.second -1]; i!=NULL; i = i->link){
+					if (Explored[(i->vertex)-1] == false){
+						if(cost[i->vertex - 1].first == DBL_MAX){
+							Parent[i->vertex - 1] = cost[top.second-1].second;
+							Level[i->vertex - 1] = Level[cost[top.second-1].second-1]+1;
+						}
+						if(cost[i->vertex -1].first > i->w){ //adMatrix_dir[top.second-1][i]
+							cost[i->vertex - 1].first = double(i->w);
+							Parent[i->vertex - 1] = cost[top.second-1].second;
+							pq.push(cost[i->vertex - 1]);
+						}
+					}
+				}
+			}
+			break;
+
+		default:
+			cout<<"Undefined value, select: Matrix = 'm', List = 'l', Vector = 'v"<<endl;
+	}
+	if (print){ //set print=true in order to print the spanning tree
+		ofstream output("Prim-Tree.txt");
+		output << "Custo da MST começando pelo vértice "<< s << " = " << get_MST_cost() <<endl;
+		output <<"Vertex\tParent\tLevel"<<endl;
+		for(int i = 0 ; i < n_vertices ; i++){
+        	output<<i+1<<"\t"<<Parent[i]<<"\t"<<Level[i]<<endl;
+		}
+		output.close();
+		cout<< "Prim successfully generated" <<endl;
+	}
 }
 
 void Graphmr::runGraph(string path, char structure, char search, int v_init, bool info, bool print){
