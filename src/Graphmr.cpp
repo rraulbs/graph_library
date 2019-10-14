@@ -675,13 +675,11 @@ void Graphmr::Dijkstra(int s){
 					//Vertices goes up from 1 to n whereas the array index goes up from 0 to n-1
 					for (int i=0; i<n_vertices; i++){
 						if (adMatrix_dir[top.second-1][i] != -1 && Explored[i] == false){
-							if(dist_v[i].first == DBL_MAX){
-								Parent[i] = dist_v[top.second-1].second;
-								Level[i] = Level[dist_v[top.second-1].second-1]+1;
-							}
 							if(dist_v[i].first > dist_v[top.second-1].first + adMatrix_dir[top.second-1][i]){
 								dist_v[i].first = double(dist_v[top.second-1].first) + double(adMatrix_dir[top.second-1][i]);
 								pq.push(dist_v[i]);
+								Parent[i] = dist_v[top.second-1].second;
+								Level[i] = Level[dist_v[top.second-1].second-1]+1;
 							}
 						}
 					}
@@ -698,13 +696,11 @@ void Graphmr::Dijkstra(int s){
 					//Vertices goes up from 1 to n whereas the array index goes up from 0 to n-1
 					for (listElement* i = adList[top.second -1]; i!=NULL; i = i->link){
 						if (Explored[(i->vertex)-1] == false){
-							if(dist_v[i->vertex - 1].first == DBL_MAX){
-								Parent[i->vertex - 1] = dist_v[top.second-1].second;
-								Level[i->vertex - 1] = Level[dist_v[top.second-1].second-1]+1;
-							}
 							if(dist_v[i->vertex -1].first > dist_v[top.second-1].first + i->w){ //adMatrix_dir[top.second-1][i]
 								dist_v[i->vertex - 1].first = dist_v[top.second-1].first + double(i->w);
 								pq.push(dist_v[i->vertex - 1]);
+								Parent[i->vertex - 1] = dist_v[top.second-1].second;
+								Level[i->vertex - 1] = Level[dist_v[top.second-1].second-1]+1;
 							}
 						}
 					}
@@ -724,7 +720,6 @@ void Graphmr::Dijkstra(int s){
 	}
 	//cout<< "Dijkstra successfully generated" <<endl;
 }
-
 void Graphmr::Prim(int s){
 	priority_queue<par_cost, vector<par_cost>, greater<par_cost> > pq;
 	cost[s-1].first = 0.0;
@@ -740,13 +735,10 @@ void Graphmr::Prim(int s){
 				//Vertices goes up from 1 to n whereas the array index goes up from 0 to n-1
 				for (int i=0; i<n_vertices; i++){
 					if (adMatrix_dir[top.second-1][i] != -1 && Explored[i] == false){
-						if(cost[i].first == DBL_MAX){
-							Parent[i] = cost[top.second-1].second;
-							Level[i] = Level[cost[top.second-1].second-1]+1;
-						}
 						if(cost[i].first > adMatrix_dir[top.second-1][i]){
 							cost[i].first = double(adMatrix_dir[top.second-1][i]);
 							Parent[i] = cost[top.second-1].second;
+							Level[i] = Level[cost[top.second-1].second-1]+1;
 							pq.push(cost[i]); //Se for colocado dentro da fila antes da alteração o resultado será incorreto
 						}
 					}
@@ -764,13 +756,10 @@ void Graphmr::Prim(int s){
 				//Vertices goes up from 1 to n whereas the array index goes up from 0 to n-1
 				for (listElement* i = adList[top.second -1]; i!=NULL; i = i->link){
 					if (Explored[(i->vertex)-1] == false){
-						if(cost[i->vertex - 1].first == DBL_MAX){
-							Parent[i->vertex - 1] = cost[top.second-1].second;
-							Level[i->vertex - 1] = Level[cost[top.second-1].second-1]+1;
-						}
 						if(cost[i->vertex -1].first > i->w){ //adMatrix_dir[top.second-1][i]
 							cost[i->vertex - 1].first = double(i->w);
 							Parent[i->vertex - 1] = cost[top.second-1].second;
+							Level[i->vertex - 1] = Level[cost[top.second-1].second-1]+1;
 							pq.push(cost[i->vertex - 1]);
 						}
 					}
