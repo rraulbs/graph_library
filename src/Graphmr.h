@@ -41,7 +41,7 @@ class Graphmr {
 private:
 
 	char structure; 			//'m' = Matrix, 'l' = List, 'v' = Vector
-
+	int maxFlow;
 	int n_edges;				//Number of edges.
 	int n_vertices;				//Number of vertices.
 	int d_min;					//degree min
@@ -49,11 +49,15 @@ private:
 	int components;				//number of components
 	int diameter;				//graph diameter
 	int level_Max;				//used to find the diameter
+	int** rGraph;				//Residual Graph
 	int* size; 					//component size
 	int* Degree; 				//stores each vertex degree (non-directed graph)
 	int* Parent;				//stores each vertex - parent
+	int* Parent_b;				//stores each vertex - parent (used by bfs in FordFulkerson)
 	int* Level;					//stores each vertex - level
+	int* Cor;					//k-color (bipartite graph): 0 = red, 1 = blue
 	int* visited;
+	int* bipartidoGroup;
 	vector<int> ordDegree;		//stores each vertex degree - median (non-directed graph)
 	vector<int> inDegree;		//stores entry degree (directed graph)
 	vector<int> outDegree;		//stores output degree (directed graph)
@@ -66,15 +70,18 @@ private:
 	float** adMatrix_dir;		//Adjacency matrix (directed graph)
 
 
+	bool bipartite;
 	bool print;					//output (ofstream)
 	bool oriented;				//True = directed graph; False = non-directed graph
 	bool weight;				//True = weighted graphs; False = unweighted graphs (all edges have unit weight)
 	bool error_1 = false;		//checks if the file was open correctly
 	bool error_2 = false;		//checks if the structure is valid
 	bool* Explored; 			//explored vertices
+	bool* Explored_b; 			//explored vertices (used by bfs in FordFulkerson)
 	bool** adMatrix;			//adjacency matrix
 
 	listElement** adList;		//adjacency list
+	listElement** adList_rGraph;//adjacency list (Residual Graph)
 	string path;
 	ifstream file;
 	time_t begin,end;			//time_t is a datatype to store time values.
@@ -82,12 +89,12 @@ private:
 	par_cost* cost;
 
 public:
-	//float** adMatrix_dir;		//Adjacency matrix (directed graph)
 
 	Graphmr();					//char const* path);//Construtor default
 	~Graphmr();					//Destrutor da classe
 
 	//GETTERS - accessor methods
+	bool get_bipartite();
 	int getN_edges();
 	int getN_vertices();
 	int getD_min();
@@ -98,6 +105,7 @@ public:
 	int get_minsizecc();
 	int get_maxsizecc();
 	int get_Diameter();
+	int get_maxFlow();
 	float getD_mean();
 	float getD_median();
 	double get_dist_v(int v);
@@ -112,18 +120,23 @@ public:
 	void setD_max(int value);
 	void setD_mean(float value);
 	void setD_median();
+	void set_maxFlow(int flow);
 
+	void set_bipartite(bool b);
 	void set_print(bool generate);
 	void set_DELP();
 	void set_Degree();
 	void set_Explored();
 	void set_Level();
 	void set_Parent();
+	void set_Cor();
 	void set_Diameter();
 	void set_dist_v();
 	void set_cost();
 	void set_weight(bool w);
 	void set_eccentricity(char algorithm);
+	void set_Parent_b();
+	void set_Explored_b();
 
 	void openFile(string path);
 	void buildGraph(char structure);
@@ -134,6 +147,9 @@ public:
 	void CC();
 	void Dijkstra(int s);
 	void Prim(int s);
+	void FordFulkerson(int s, int t);
+	bool bfs(int s, int t);
+	void BellmanFord(int t);
 
 	void runGraph(string path, char structure, char search, int v_init, bool info, bool print);
 	void loadPercent(int p, int n);

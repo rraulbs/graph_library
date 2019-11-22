@@ -16,6 +16,7 @@ Graphmr::Graphmr() {//(char const* path) : file(path)
 	this-> print = false;
 	this-> weight = false;
 	this-> oriented = false;
+	this-> bipartite = true;
 }
 
 Graphmr::~Graphmr() {
@@ -23,6 +24,9 @@ Graphmr::~Graphmr() {
 }
 
 //GETTERS - accessor methods
+bool Graphmr::get_bipartite(){
+	return bipartite;
+}
 int Graphmr::getN_edges(){
 	return n_edges;
 }
@@ -68,6 +72,9 @@ int Graphmr::get_level_Max(){
 int Graphmr::get_Diameter(){
 	return diameter;
 }
+int Graphmr::get_maxFlow(){
+	return maxFlow;
+}
 double Graphmr::get_dist_v(int v){
 	return dist_v[v-1].first;
 }
@@ -110,6 +117,9 @@ void Graphmr::setD_median(){
 void Graphmr::set_print(bool generate){
 	print = generate;
 }
+void Graphmr::set_bipartite(bool b){
+	bipartite = b;
+}
 void Graphmr::set_DELP(){
 	for (int i=0; i<n_vertices; i++){
 		Degree[i] = 0;
@@ -134,8 +144,13 @@ void Graphmr::set_Level(){
 	}
 }
 void Graphmr::set_Parent(){
-	for (int i=0; i<n_vertices ;i++){
+	for(int i=0; i<n_vertices; i++){
 		Parent[i] = -1;
+	}
+}
+void Graphmr::set_Cor(){
+	for(int i = 0; i < n_vertices; i++){
+		Cor[i] = -1;
 	}
 }
 void Graphmr::set_dist_v(){
@@ -186,6 +201,19 @@ void Graphmr::set_eccentricity(char algorithm){ //algorithm: d = Dijkstra, p = "
 		cout<<"Undefined value, select: Dijkstra = 'd', Prim = 'p'"<<endl;
 	}
 }
+void Graphmr::set_maxFlow(int flow){
+	maxFlow = flow;
+}
+void Graphmr::set_Parent_b(){
+	for(int i=0; i<n_vertices+2; i++){
+		Parent_b[i] = -1;
+	}
+}
+void Graphmr::set_Explored_b(){
+	for (int i = 0; i < n_vertices+2; i++){
+		Explored_b[i] = false;
+	}
+}
 //Functions*******************************************
 void Graphmr::openFile(string path){
 	file.open(path.c_str()); // ("exemplo.txt, std::ifstream::in);
@@ -215,6 +243,8 @@ void Graphmr::buildGraph(char structure){
 	Explored = new bool[n_vertices];
 	Level = new int[n_vertices];
 	Parent = new int[n_vertices];
+	Cor = new int[n_vertices];
+	bipartidoGroup = new int[n_vertices];
 	if(weight == true){
 		dist_v = new par_distV[n_vertices];
 		set_dist_v();
@@ -222,6 +252,7 @@ void Graphmr::buildGraph(char structure){
 		set_cost();
 	}
 	set_DELP();
+	set_Cor();
 	this->structure = structure;
 	int n = 1;
 	switch(structure){
@@ -493,6 +524,29 @@ void Graphmr::BFS(int s){
 					}
 				}
 			}
+			if(print){
+				for(int i=0; i<n_vertices; i++){
+					for(int j=0; j<n_vertices; j++){
+						if(adMatrix[i][j] == true && Level[i]%2 == Level[j]%2){
+							set_bipartite(false);
+						}
+					}
+				}
+				if(bipartite == true){
+					cout<<"Grafo é bipartido!"<<endl;
+					for(int i = 0 ; i < n_vertices ; i++){
+						if(Level[i]%2 == 0){
+					       	bipartidoGroup[i] = 0;
+						}
+						else{
+					       	bipartidoGroup[i] = 1;
+						}
+					}
+				}
+				else{
+					cout<<"Grafo não é bipartido!"<<endl;
+				}
+			}
 			break;
 
 		case 'l':
@@ -511,6 +565,29 @@ void Graphmr::BFS(int s){
 					}
 				}
 			}
+			if(print){
+				for(int i=0; i<n_vertices; i++){
+					for(listElement* j = adList[i]; j!=NULL; j = j->link){
+						if(Level[i]%2 == Level[j->vertex - 1]%2){
+							set_bipartite(false);
+						}
+					}
+				}
+				if(bipartite == true){
+					cout<<"Grafo é bipartido!"<<endl;
+					for(int i = 0 ; i < n_vertices ; i++){
+						if(Level[i]%2 == 0){
+							bipartidoGroup[i] = 0;
+						}
+						else{
+							bipartidoGroup[i] = 1;
+						}
+					}
+				}
+				else{
+					cout<<"Grafo não é bipartido!"<<endl;
+				}
+			}
 			break;
 
 		case 'v':
@@ -527,6 +604,39 @@ void Graphmr::BFS(int s){
 						Level[vec[vN-1][j] -1] = Level[vN-1] + 1;
 						level_Max = max(level_Max, Level[vec[vN-1][j] -1]);
 					}
+				}
+			}
+			if(print){
+				for(int i=0; i<n_vertices; i++){
+					for(int j = 0; j < vec[i].size(); j++){
+						if(Level[i]%2 == Level[vec[i][j] - 1]%2){
+							set_bipartite(false);
+						}
+					}
+				}
+				if(bipartite == true){
+					cout<<"Grafo é bipartido!"<<endl;
+					if(print){
+						//Gera um txt que mostra o lado onde cada vértice se encontra dentro de um grafo bipartido
+						ofstream output("Bipartite.txt");
+						output <<"Vertex\tPart1:"<<endl;
+						for(int i = 0 ; i < n_vertices ; i++){
+							if(Level[i]%2 == 0){
+					        	output<<i+1<<"\t"<<endl;
+							}
+						}
+						output <<"Vertex\tPart2:"<<endl;
+						for(int j = 0 ; j < n_vertices ; j++){
+							if(Level[j]%2 == 1){
+					        	output<<j+1<<"\t"<<endl;
+							}
+						}
+						output.close();
+						cout<< "Graph bipartite in: Bipartite.txt "<<endl;
+					}
+				}
+				else{
+					cout<<"Grafo não é bipartido!"<<endl;
 				}
 			}
 			break;
@@ -781,7 +891,297 @@ void Graphmr::Prim(int s){
 		cout<< "Prim successfully generated" <<endl;
 	}
 }
+void Graphmr::FordFulkerson(int s, int t){
+	//create a residual graph and fill the residual graph with given capacities
+	Explored_b = new bool[n_vertices+2];
+	Parent_b = new int[n_vertices+2];
+    int u, v;
+    int max_flow;
+    int path_flow;
+    clock_t start, end;
+    double time_taken;
+	switch(structure){
+		case 'm':
+			// create residual graph
+			rGraph = new int*[n_vertices + 2];
+			for (int i = 0; i< n_vertices + 2; i++){
+				rGraph[i] = new int[n_vertices + 2];
+				for (int j = 0; j < (n_vertices + 2); j++){
+					if(i < n_vertices && j < n_vertices){
+						if(adMatrix[i][j] == false){
+							rGraph[i][j] = 0;
+						}
+						else{
+							rGraph[i][j] = 1;
+						}
+					}
+					else{
+						if (i == n_vertices){
+							if (j < n_vertices){
+								if(bipartidoGroup[j]==0){
+									rGraph[i][j] = 1;
+									rGraph[j][i] = 1;
+								}
+								else{
+									rGraph[i][j] = 0;
+								}
+							}
+							else{
+								rGraph[i][j] = 0;
+							}
+						}
+						else{
+							if (j < n_vertices){
+								if(bipartidoGroup[j]==1){
+									rGraph[i][j] = 1;
+									rGraph[j][i] = 1;
+								}
+								else{
+									rGraph[i][j] = 0;
+								}
+							}
+							else{
+								rGraph[i][j] = 0;
+							}
+						}
+					}
+				}
+			}
+			//TESTE: Print residual graph
+			//for (int i = 0; i<n_vertices + 2; i++){
+			//	for(int j = 0; j<n_vertices + 2; j++){
+			//		cout<< rGraph[i][j] <<"\t";
+			//	}
+			//	cout<<endl;
+			//}
+			max_flow = 0; // There is no flow initially
+			start = clock();
+		    // Augment the flow while tere is path from source to sink
+			while(bfs(s,t)){
+				// Find minimum residual capacity of the edges along the
+				// path filled by BFS. Or we can say find the maximum flow
+				// through the path found.
+				path_flow = INT_MAX;
+				for(v = t; v != s; v = Parent_b[v-1]){
+					u = Parent_b[v-1];
+					path_flow = min(path_flow, rGraph[u-1][v-1]);
+				}
+				// update residual capacities of the edges and reverse edges along the path
+				for(v = t; v != s; v = Parent_b[v-1]){
+					u = Parent_b[v-1];
+					rGraph[u-1][v-1] = rGraph[u-1][v-1] - path_flow;
+					rGraph[v-1][u-1] = rGraph[u-1][v-1] + path_flow;
+				}
+		        // Add path flow to overall flow
+		        max_flow += path_flow;
+			}
+		    // Return the overall flow
+			set_maxFlow(max_flow);
+	        end = clock();
+	        time_taken = double(end - start) / double(CLOCKS_PER_SEC);
+	        cout << "Time taken by program is on average: " << time_taken <<endl;
+			break;
 
+		case 'l':
+			//create residual graph
+			adList_rGraph = new listElement*[n_vertices + 2]; //+2 (including vertex s and vertex t)
+			for (int i = 0; i < n_vertices+2; i++){
+				adList_rGraph[i] = NULL;
+			}
+			listElement* tempElement;
+			for(int i=0; i<n_vertices+2; i++){
+				if(i < n_vertices){
+					for(listElement* j = adList[i]; j!=NULL; j = j->link){
+						if(i < n_vertices){
+							tempElement = new listElement(); 		//creates an auxiliary element
+							tempElement-> vertex = j->vertex; 			//assigns j value to the element vertex
+							tempElement->	w = 1;
+							tempElement-> link = adList_rGraph[i]; 	//pointer to the complementing vertex
+							adList_rGraph[i] = tempElement; 	//inserts in the front
+						}
+					}
+				}
+				else{
+					if (i == n_vertices){
+						for(int k = 0; k < n_vertices; k++){
+							if(bipartidoGroup[k]==0){
+								//Ligando vertice s com os vértices do grafo original
+								tempElement = new listElement(); 		//creates an auxiliary element
+								tempElement-> vertex = k + 1; 			//assigns j value to the element vertex
+								tempElement->	w = 1;
+								tempElement-> link = adList_rGraph[i]; 	//pointer to the complementing vertex
+								adList_rGraph[i] = tempElement; 	//inserts in the front
+
+								/*
+								//ligando os vértices do grafo original ao vértice s
+								tempElement = new listElement(); 		//creates an auxiliary element
+								tempElement-> vertex = i + 1; 			//assigns j value to the element vertex
+								tempElement->	w = 1;
+								tempElement-> link = adList_rGraph[k]; 	//pointer to the complementing vertex
+								adList_rGraph[k] = tempElement; 	//inserts in the front
+								*/
+							}
+						}
+					}
+					else{
+						for(int k = 0; k < n_vertices; k++){
+							if(bipartidoGroup[k] != 0){
+								/*
+								//Ligando vertice t com os vértices do grafo original
+								tempElement = new listElement(); 		//creates an auxiliary element
+								tempElement-> vertex = k + 1; 			//assigns j value to the element vertex
+								tempElement->	w = 1;
+								tempElement-> link = adList_rGraph[i]; 	//pointer to the complementing vertex
+								adList_rGraph[i] = tempElement; 	//inserts in the front
+								*/
+								//ligando os vértices do grafo original ao vértice t
+								tempElement = new listElement(); 		//creates an auxiliary element
+								tempElement-> vertex = i+1; 			//assigns j value to the element vertex
+								tempElement->	w = 1;
+								tempElement-> link = adList_rGraph[k]; 	//pointer to the complementing vertex
+								adList_rGraph[k] = tempElement; 	//inserts in the front
+
+							}
+						}
+					}
+				}
+			}
+			/*TESTE: Print residual graph
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+			cout<<"Vetor bipartido: "<<endl;
+			for(int i = 0; i < n_vertices; i++){
+				cout<< "[" <<i <<"] = " << bipartidoGroup[i]<<endl;
+			}
+			cout<<"-----------------"<<endl;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+			for(int i=0; i<n_vertices; i++){
+				cout << "[" <<i <<"] -> ";
+				for(listElement* j = adList[i]; j!=NULL; j = j->link){
+					cout << j->vertex << "\t";
+				}
+				cout <<endl;
+			}
+			cout<<"Residual Graph: "<<endl;
+			for(int i=0; i<n_vertices+2; i++){
+				cout << "[" <<i <<"] -> ";
+				for(listElement* j = adList_rGraph[i]; j!=NULL; j = j->link){
+					cout << j->vertex << "|"<<j->w << "\t";
+				}
+				cout <<endl;
+			}
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+			/*/
+			max_flow = 0; // There is no flow initially
+		    // Augment the flow while tere is path from source to sink
+			//*
+	        start = clock();
+			while(bfs(s,t)){
+				// Find minimum residual capacity of the edges along the
+				// path filled by BFS. Or we can say find the maximum flow
+				// through the path found.
+				path_flow = INT_MAX;
+				for(v = t; v != s; v = Parent_b[v-1]){
+					u = Parent_b[v-1];
+					for(listElement* j = adList_rGraph[u-1]; j!=NULL; j = j->link){
+						if(j->vertex == v){
+							//path_flow = min(path_flow, rGraph[u-1][v-1]);
+							path_flow = min(path_flow, int(j-> w));
+						}
+					}
+				}
+				// update residual capacities of the edges and reverse edges along the path
+				for(v = t; v != s; v = Parent_b[v-1]){
+					u = Parent_b[v-1];
+					//rGraph[u-1][v-1] = rGraph[u-1][v-1] - path_flow;
+					//rGraph[v-1][u-1] = rGraph[u-1][v-1] + path_flow;
+					for(listElement* j = adList_rGraph[u-1]; j!=NULL; j = j->link){
+						if(j->vertex == v){
+							j-> w = j-> w - path_flow;
+						}
+					}
+					for(listElement* j = adList_rGraph[v-1]; j!=NULL; j = j->link){
+						if(j->vertex == u){
+							j-> w = j-> w + path_flow;
+						}
+					}
+				}
+		        // Add path flow to overall flow
+		        max_flow += path_flow;
+			}
+		    // Return the overall flow
+			set_maxFlow(max_flow);
+			//*/
+	        end = clock();
+	        time_taken = double(end - start) / double(CLOCKS_PER_SEC);
+	        cout << "Time taken by program is on average: " << time_taken <<endl;
+			break;
+		case 'v':
+			//create residual graph
+			break;
+
+		default:
+			cout<<"Undefined value, select: Matrix = 'm', List = 'l', Vector = 'v"<<endl;
+	}
+}
+bool Graphmr::bfs(int s, int t){
+	set_Parent_b();
+	set_Explored_b();
+	queue<int> Q; 			//creates a queue Q that temporarily stores the neighbours
+	Parent_b[s-1] = 0;
+	switch(structure){
+		case 'm':
+			Q.push(s); 		//adds the initial vertex to the queue
+			Explored_b[s-1]=true;
+			while (!Q.empty()){
+				int vN = Q.front();
+				Q.pop();
+				//Vertices goes up from 1 to n whereas the array index goes up from 0 to n-1
+				for (int i=0; i<n_vertices +2 ;i++){
+					if (rGraph[vN-1][i] == 1 && Explored_b[i] == false){
+						Q.push(i+1);
+						Explored_b[i] = true;
+						Parent_b[i] = vN;
+					}
+				}
+			}
+			//for (int i = 0; i < n_vertices + 2; i++){
+			//	cout<<"explored[" <<i <<"] = " << Explored_b[i] <<endl;
+			//}
+			// If we reached sink in BFS starting from source, then return true, else false
+			return (Explored_b[t-1] == true);
+			break;
+		case 'l':
+			Q.push(s);
+			Explored_b[s-1] = true;
+			while (!Q.empty()){
+				int vN = Q.front();
+				Q.pop();
+				for (listElement* i = adList_rGraph[vN-1]; i!=NULL; i = i->link){
+					if (Explored_b[(i->vertex)-1] == false && i-> w > 0) {
+						Q.push(i->vertex);
+						Explored_b[i->vertex-1] = true;
+						Parent_b[i->vertex-1] = vN;
+					}
+				}
+			}
+			return (Explored_b[t-1] == true);
+			break;
+		default:
+			cout<<"Undefined value, select: Matrix = 'm', List = 'l', Vector = 'v"<<endl;
+	}
+}
+void Graphmr::BellmanFord(int t){
+	switch(structure){
+		case 'm':
+			break;
+		case 'l':
+			break;
+		case 'v':
+			break;
+		default:
+			cout<<"Undefined value, select: Matrix = 'm', List = 'l', Vector = 'v"<<endl;
+	}
+}
 void Graphmr::runGraph(string path, char structure, char search, int v_init, bool info, bool print){
 	this->print = print;
 	openFile(path);
