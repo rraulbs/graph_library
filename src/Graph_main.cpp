@@ -40,6 +40,6 @@ int main(){
 			cout<< "M[" <<i+1 <<"] =" << g.Bellman_dist[i]<<endl;
 		}
 	}
-	/*///
+	//*/
 }
 
