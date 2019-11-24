@@ -65,11 +65,12 @@ private:
 	vector<vector<float> > vec_W;//adjacency vector (Store weights)
 
 	double eccentricity;
+
 	float d_mean;				//degree mean
 	float d_median;				//degree median
 	float** adMatrix_dir;		//Adjacency matrix (directed graph)
 
-
+	bool ciclo_bellman;
 	bool bipartite;
 	bool print;					//output (ofstream)
 	bool oriented;				//True = directed graph; False = non-directed graph
@@ -92,8 +93,9 @@ public:
 
 	Graphmr();					//char const* path);//Construtor default
 	~Graphmr();					//Destrutor da classe
-
+	double* Bellman_dist;
 	//GETTERS - accessor methods
+	bool get_ciclo_bellman();
 	bool get_bipartite();
 	int getN_edges();
 	int getN_vertices();
@@ -134,9 +136,11 @@ public:
 	void set_dist_v();
 	void set_cost();
 	void set_weight(bool w);
+	void set_oriented(bool o);
 	void set_eccentricity(char algorithm);
 	void set_Parent_b();
 	void set_Explored_b();
+	void set_Bellman_dist();
 
 	void openFile(string path);
 	void buildGraph(char structure);

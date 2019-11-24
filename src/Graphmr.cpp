@@ -17,6 +17,7 @@ Graphmr::Graphmr() {//(char const* path) : file(path)
 	this-> weight = false;
 	this-> oriented = false;
 	this-> bipartite = true;
+	this-> ciclo_bellman = false;
 }
 
 Graphmr::~Graphmr() {
@@ -26,6 +27,9 @@ Graphmr::~Graphmr() {
 //GETTERS - accessor methods
 bool Graphmr::get_bipartite(){
 	return bipartite;
+}
+bool Graphmr::get_ciclo_bellman(){
+	return ciclo_bellman;
 }
 int Graphmr::getN_edges(){
 	return n_edges;
@@ -184,6 +188,9 @@ void Graphmr::set_Diameter(){
 void Graphmr::set_weight(bool w){
 	weight = w;
 }
+void Graphmr::set_oriented(bool o){
+	oriented = o;
+}
 void Graphmr::set_eccentricity(char algorithm){ //algorithm: d = Dijkstra, p = "prim";
 	eccentricity = DBL_MIN;
 	switch (algorithm){
@@ -212,6 +219,11 @@ void Graphmr::set_Parent_b(){
 void Graphmr::set_Explored_b(){
 	for (int i = 0; i < n_vertices+2; i++){
 		Explored_b[i] = false;
+	}
+}
+void Graphmr::set_Bellman_dist(){
+	for (int i = 0; i < n_vertices; i++){
+		Bellman_dist[i] = DBL_MAX;
 	}
 }
 //Functions*******************************************
@@ -311,8 +323,12 @@ void Graphmr::buildGraph(char structure){
 					if (int(vx) <= 0){continue;}
 					if (int(vy) <= 0){continue;}
 					if (float(vz) < 0){
-						cout << "Weight < 0 : Does not meet necessary condition (Dijkstra's algorithm)" <<endl;
-						//continue;
+						int temp = 1;
+						if(temp < 2){
+							cout << "Weight < 0 : Does not meet necessary condition (Dijkstra's algorithm)" <<endl;
+							//continue;
+							temp++;
+						}
 					}
 					loadPercent(n, n_vertices);
 					n++;
@@ -379,7 +395,7 @@ void Graphmr::buildGraph(char structure){
 					if (int(vx) <= 0){continue;}
 					if (int(vy) <= 0){continue;}
 					if (float(vz) < 0){
-						cout << "Weight < 0 : Does not meet necessary condition (Dijkstra's algorithm)" <<endl;
+						//cout << "Weight < 0 : Does not meet necessary condition (Dijkstra's algorithm)" <<endl;
 						//continue;
 					}
 					loadPercent(n, n_vertices);
@@ -1171,10 +1187,40 @@ bool Graphmr::bfs(int s, int t){
 	}
 }
 void Graphmr::BellmanFord(int t){
+	Bellman_dist = new double[n_vertices];
+	set_Bellman_dist();
+	Bellman_dist[t-1] = 0;
+	bool flag = false;
 	switch(structure){
 		case 'm':
 			break;
 		case 'l':
+			for (int i = 0; i < n_vertices - 1; i++){
+				for(int v = 0; v < n_vertices; v++){
+					for(listElement* j = adList[v]; j!=NULL; j = j->link){
+						if(Bellman_dist[v] > Bellman_dist[j->vertex - 1] + j-> w){
+							Bellman_dist[v] = Bellman_dist[j->vertex - 1] + (j-> w);
+							flag = true;
+						}
+					}
+				}
+				if(flag==false){
+					break;
+				}
+				flag = false;
+			}
+			//detecting negative cycles
+			for(int v = 1; v < n_vertices; v++){
+			  	for(listElement* j = adList[v]; j!=NULL; j = j->link){
+			  		if(Bellman_dist[v] > Bellman_dist[j->vertex - 1] + j-> w){
+			  			cout << "Negative Cycle Detected!"<<endl;
+			  			ciclo_bellman = true;
+			  			return;
+			  		}
+				}
+			}
+			ciclo_bellman = false;
+  			cout << "No negative Cycle Detected!"<<endl;
 			break;
 		case 'v':
 			break;
