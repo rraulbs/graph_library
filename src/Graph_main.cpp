@@ -12,10 +12,10 @@
 
 int main(){
 	// Estudo de caso Trabalho 3
-	//*// Emparelhamento Máximo - Utilizando Ford-Fulkerson
+	/*// Emparelhamento Máximo - Utilizando Ford-Fulkerson
 	int s,t;
 	Graphmr g;
-	g.openFile("grafo_teste_6.txt");
+	g.openFile("grafo_teste_1.txt");
 	g.buildGraph('l');
 	g.set_print(true);
 	g.BFS(1);
@@ -26,7 +26,7 @@ int main(){
 		cout << "Max flow = " << g.get_maxFlow()<<endl;
 	}
 	//*/
-	/*// Bellman-Ford
+	//*// Bellman-Ford
 	int t;
 	t = 6;
 	Graphmr g;
@@ -37,7 +37,7 @@ int main(){
 	g.BellmanFord(t);
 	if(g.get_ciclo_bellman()==false){
 		for(int i = 0; i < g.getN_vertices(); i++){
-			cout<< "M[" <<i+1 <<"] =" << g.Bellman_dist[i]<<endl;
+			cout<< "M[" <<i+1 <<"] =" << g.get_Bellman_dist(i+1)<<endl;
 		}
 	}
 	//*/

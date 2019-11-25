@@ -95,6 +95,9 @@ double Graphmr::get_MST_cost(){
 double Graphmr::get_eccentricity(){
 	return eccentricity;
 }
+double Graphmr::get_Bellman_dist(int v){
+	return Bellman_dist[v-1];
+}
 
 
 //SETTERS - mutator methods
@@ -150,11 +153,6 @@ void Graphmr::set_Level(){
 void Graphmr::set_Parent(){
 	for(int i=0; i<n_vertices; i++){
 		Parent[i] = -1;
-	}
-}
-void Graphmr::set_Cor(){
-	for(int i = 0; i < n_vertices; i++){
-		Cor[i] = -1;
 	}
 }
 void Graphmr::set_dist_v(){
@@ -255,7 +253,6 @@ void Graphmr::buildGraph(char structure){
 	Explored = new bool[n_vertices];
 	Level = new int[n_vertices];
 	Parent = new int[n_vertices];
-	Cor = new int[n_vertices];
 	bipartidoGroup = new int[n_vertices];
 	if(weight == true){
 		dist_v = new par_distV[n_vertices];
@@ -264,7 +261,6 @@ void Graphmr::buildGraph(char structure){
 		set_cost();
 	}
 	set_DELP();
-	set_Cor();
 	this->structure = structure;
 	int n = 1;
 	switch(structure){

@@ -41,6 +41,7 @@ class Graphmr {
 private:
 
 	char structure; 			//'m' = Matrix, 'l' = List, 'v' = Vector
+
 	int maxFlow;
 	int n_edges;				//Number of edges.
 	int n_vertices;				//Number of vertices.
@@ -49,26 +50,27 @@ private:
 	int components;				//number of components
 	int diameter;				//graph diameter
 	int level_Max;				//used to find the diameter
-	int** rGraph;				//Residual Graph
 	int* size; 					//component size
 	int* Degree; 				//stores each vertex degree (non-directed graph)
 	int* Parent;				//stores each vertex - parent
 	int* Parent_b;				//stores each vertex - parent (used by bfs in FordFulkerson)
 	int* Level;					//stores each vertex - level
-	int* Cor;					//k-color (bipartite graph): 0 = red, 1 = blue
 	int* visited;
 	int* bipartidoGroup;
+	int** rGraph;				//Residual Graph
+
 	vector<int> ordDegree;		//stores each vertex degree - median (non-directed graph)
 	vector<int> inDegree;		//stores entry degree (directed graph)
 	vector<int> outDegree;		//stores output degree (directed graph)
 	vector<vector<int> > vec;	//adjacency vector
 	vector<vector<float> > vec_W;//adjacency vector (Store weights)
 
-	double eccentricity;
-
 	float d_mean;				//degree mean
 	float d_median;				//degree median
 	float** adMatrix_dir;		//Adjacency matrix (directed graph)
+
+	double eccentricity;
+	double* Bellman_dist;
 
 	bool ciclo_bellman;
 	bool bipartite;
@@ -93,7 +95,6 @@ public:
 
 	Graphmr();					//char const* path);//Construtor default
 	~Graphmr();					//Destrutor da classe
-	double* Bellman_dist;
 	//GETTERS - accessor methods
 	bool get_ciclo_bellman();
 	bool get_bipartite();
@@ -114,6 +115,7 @@ public:
 	double get_cost(int v);
 	double get_eccentricity();
 	double get_MST_cost();
+	double get_Bellman_dist(int v);
 
 	//SETTERS - mutator methods
 	void setN_edges();
@@ -131,7 +133,6 @@ public:
 	void set_Explored();
 	void set_Level();
 	void set_Parent();
-	void set_Cor();
 	void set_Diameter();
 	void set_dist_v();
 	void set_cost();
@@ -142,6 +143,7 @@ public:
 	void set_Explored_b();
 	void set_Bellman_dist();
 
+	// Functions
 	void openFile(string path);
 	void buildGraph(char structure);
 	void InfoDegree();
@@ -151,9 +153,9 @@ public:
 	void CC();
 	void Dijkstra(int s);
 	void Prim(int s);
+	void BellmanFord(int t);
 	void FordFulkerson(int s, int t);
 	bool bfs(int s, int t);
-	void BellmanFord(int t);
 
 	void runGraph(string path, char structure, char search, int v_init, bool info, bool print);
 	void loadPercent(int p, int n);
